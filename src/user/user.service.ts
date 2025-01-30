@@ -20,6 +20,10 @@ export class UserService {
     return `This action returns all user`;
   }
 
+  async findByEmail(email: string) {
+    return await this.userRepo.findOne({ where: { email } });
+  }
+
   findOne(id: number) {
     return `This action returns a #${id} user`;
   }
