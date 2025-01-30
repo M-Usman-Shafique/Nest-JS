@@ -4,6 +4,7 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Post } from './entities/post.entity';
+import { PaginationDTO } from './dto/pagination.dto';
 
 @Injectable()
 export class PostService {
@@ -15,8 +16,11 @@ export class PostService {
     return await this.postRepo.save(postBody);
   }
 
-  async findAll() {
-    const posts = await this.postRepo.find();
+  async findAll(paginationDTO: PaginationDTO) {
+    const posts = await this.postRepo.find({
+      skip: paginationDTO.skip,
+      take: paginationDTO.limit ?? 10,
+    });
 
     if (posts.length === 0) throw new NotFoundException();
     return posts;
