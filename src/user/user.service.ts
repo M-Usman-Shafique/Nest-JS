@@ -18,6 +18,17 @@ export class UserService {
     private userRepo: Repository<User>,
     private jwtService: JwtService,
   ) {}
+
+  private async validatePassword(
+    plainPassword: string,
+    hashedPassword: string,
+  ): Promise<boolean> {
+    return await bcrypt.compare(plainPassword, hashedPassword);
+  }
+
+  private generateToken(user: User): string {
+    return this.jwtService.sign({ id: user.id, email: user.email });
+  }
   async create(createUserDto: CreateUserDto) {
     const existingUser = await this.userRepo.findOne({
       where: { email: createUserDto.email },
@@ -30,7 +41,7 @@ export class UserService {
     const user = this.userRepo.create(createUserDto);
     await this.userRepo.save(user);
 
-    const token = this.jwtService.sign({ id: user.id, email: user.email });
+    const token = this.generateToken(user);
 
     return { user, token };
   }
@@ -42,17 +53,16 @@ export class UserService {
       throw new NotFoundException('User not found.');
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-
+    const isPasswordValid = await this.validatePassword(
+      password,
+      user.password,
+    );
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials.');
     }
 
-    const token = this.jwtService.sign({ id: user.id, email: user.email });
+    const token = this.generateToken(user);
 
     return { user, token };
-  }
-  async findByEmail(email: string) {
-    return await this.userRepo.findOne({ where: { email } });
   }
 }
