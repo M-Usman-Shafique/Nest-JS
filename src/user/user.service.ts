@@ -76,4 +76,24 @@ export class UserService {
 
     return { user, token };
   }
+
+  async logout(res: Response) {
+    res.clearCookie('jwt', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+  }
+
+  async deleteUser(id: number, res: Response) {
+    const user = await this.userRepo.findOne({ where: { id } });
+
+    if (!user) {
+      throw new NotFoundException('User not found.');
+    }
+
+    await this.userRepo.remove(user);
+
+    await this.logout(res);
+  }
 }

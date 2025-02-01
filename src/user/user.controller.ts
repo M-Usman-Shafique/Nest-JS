@@ -6,6 +6,8 @@ import {
   NotFoundException,
   UnauthorizedException,
   Res,
+  Delete,
+  Param,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -44,6 +46,25 @@ export class UserController {
         error instanceof UnauthorizedException
       ) {
         return res.status(401).json({ message: error.message });
+      }
+      throw error;
+    }
+  }
+
+  @Post('logout')
+  async logout(@Res() res: Response) {
+    await this.userService.logout(res);
+    return res.status(200).json({ message: 'Logout successful' });
+  }
+
+  @Delete(':id')
+  async deleteUser(@Param('id') id: number, @Res() res: Response) {
+    try {
+      await this.userService.deleteUser(id, res);
+      return res.status(200).json({ message: 'User deleted successfully' });
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        return res.status(404).json({ message: error.message });
       }
       throw error;
     }
