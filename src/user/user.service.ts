@@ -10,6 +10,7 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { Response } from 'express';
 
 @Injectable()
 export class UserService {
@@ -29,7 +30,15 @@ export class UserService {
   private generateToken(user: User): string {
     return this.jwtService.sign({ id: user.id, email: user.email });
   }
-  async create(createUserDto: CreateUserDto) {
+
+  private setTokenCookie(res: Response, token: string): void {
+    res.cookie('jwt', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+  }
+  async create(createUserDto: CreateUserDto, res: Response) {
     const existingUser = await this.userRepo.findOne({
       where: { email: createUserDto.email },
     });
@@ -42,11 +51,12 @@ export class UserService {
     await this.userRepo.save(user);
 
     const token = this.generateToken(user);
+    this.setTokenCookie(res, token);
 
     return { user, token };
   }
 
-  async login(email: string, password: string) {
+  async login(email: string, password: string, res: Response) {
     const user = await this.userRepo.findOne({ where: { email } });
 
     if (!user) {
@@ -62,6 +72,7 @@ export class UserService {
     }
 
     const token = this.generateToken(user);
+    this.setTokenCookie(res, token);
 
     return { user, token };
   }
