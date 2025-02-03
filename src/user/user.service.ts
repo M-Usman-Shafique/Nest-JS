@@ -28,14 +28,20 @@ export class UserService {
   }
 
   private generateToken(user: User): string {
-    return this.jwtService.sign({ id: user.id, email: user.email });
+    return this.jwtService.sign(
+      { id: user.id, email: user.email },
+      {
+        expiresIn: '1d',
+      },
+    );
   }
 
   private setTokenCookie(res: Response, token: string): void {
     res.cookie('jwt', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+      maxAge: 60 * 60 * 24 * 1000,
     });
   }
   async create(createUserDto: CreateUserDto, res: Response) {
@@ -53,7 +59,12 @@ export class UserService {
     const token = this.generateToken(user);
     this.setTokenCookie(res, token);
 
-    return { user, token };
+    return {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      token,
+    };
   }
 
   async login(email: string, password: string, res: Response) {
@@ -74,15 +85,12 @@ export class UserService {
     const token = this.generateToken(user);
     this.setTokenCookie(res, token);
 
-    return { user, token };
-  }
-
-  async logout(res: Response) {
-    res.clearCookie('jwt', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-    });
+    return {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      token,
+    };
   }
 
   async deleteUser(id: number, res: Response) {
@@ -93,7 +101,5 @@ export class UserService {
     }
 
     await this.userRepo.remove(user);
-
-    await this.logout(res);
   }
 }
