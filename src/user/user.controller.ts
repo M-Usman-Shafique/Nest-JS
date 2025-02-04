@@ -53,25 +53,13 @@ export class UserController {
 
   @Post('logout')
   async logout(@Res() res: Response) {
-    res.clearCookie('jwt', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-    });
-    // res.cookie('jwt', '', {
-    //   httpOnly: true,
-    //   secure: process.env.NODE_ENV === 'production',
-    //   sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-    //   expires: new Date(0),
-    // });
-    
-    return res.status(200).json({ message: 'Logged out successfully.' });
+    this.userService.logout(res);
   }
 
   @Delete(':id')
   async deleteUser(@Param('id') id: number, @Res() res: Response) {
     try {
-      await this.userService.deleteUser(id);
+      await this.userService.deleteUser(id, res);
       return res.status(200).json({ message: 'User deleted successfully' });
     } catch (error) {
       if (error instanceof NotFoundException) {

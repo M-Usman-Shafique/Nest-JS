@@ -44,6 +44,14 @@ export class UserService {
       maxAge: 60 * 60 * 24 * 1000,
     });
   }
+
+  private clearJwt(res: Response): void {
+    res.clearCookie('jwt', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+    });
+  }
   async create(createUserDto: CreateUserDto, res: Response) {
     const existingUser = await this.userRepo.findOne({
       where: { email: createUserDto.email },
@@ -93,7 +101,12 @@ export class UserService {
     };
   }
 
-  async deleteUser(id: number) {
+  logout(res: Response): void {
+    this.clearJwt(res);
+    res.status(200).json({ message: 'Logged out successfully.' });
+  }
+
+  async deleteUser(id: number, res: Response): Promise<{ message: string }> {
     const user = await this.userRepo.findOne({ where: { id } });
 
     if (!user) {
@@ -101,5 +114,8 @@ export class UserService {
     }
 
     await this.userRepo.remove(user);
+    this.clearJwt(res);
+
+    return { message: 'User deleted successfully.' };
   }
 }
