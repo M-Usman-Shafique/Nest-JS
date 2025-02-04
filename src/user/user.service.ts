@@ -93,7 +93,7 @@ export class UserService {
     };
   }
 
-  async deleteUser(id: number, res: Response) {
+  async deleteUser(id: number) {
     const user = await this.userRepo.findOne({ where: { id } });
 
     if (!user) {

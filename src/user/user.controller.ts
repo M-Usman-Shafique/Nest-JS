@@ -53,7 +53,6 @@ export class UserController {
 
   @Post('logout')
   async logout(@Res() res: Response) {
-    console.log('Logout call...');
     res.clearCookie('jwt', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -72,7 +71,7 @@ export class UserController {
   @Delete(':id')
   async deleteUser(@Param('id') id: number, @Res() res: Response) {
     try {
-      await this.userService.deleteUser(id, res);
+      await this.userService.deleteUser(id);
       return res.status(200).json({ message: 'User deleted successfully' });
     } catch (error) {
       if (error instanceof NotFoundException) {
