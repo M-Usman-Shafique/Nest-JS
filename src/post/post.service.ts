@@ -44,6 +44,19 @@ export class PostService {
     return post;
   }
 
+  async findUserPosts(userId: number, paginationDTO: PaginationDTO) {
+    const { skip = 0, limit = 10 } = paginationDTO;
+  
+    const posts = await this.postRepo.find({
+      where: { user: { id: userId } },
+      skip,
+      take: limit,
+      relations: ['user'],
+    });
+  
+    return posts;
+  }  
+
   async update(id: number, updatePostDto: UpdatePostDto, userId: number) {
     const post = await this.postRepo.findOne({
       where: { id },

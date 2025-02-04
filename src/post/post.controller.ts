@@ -33,10 +33,11 @@ export class PostController {
     return this.postService.findAll(paginationDTO);
   }
 
-  // @Get(':id')
-  // findOne(@Param('id', ParseIntPipe) id: number) {
-  //   return this.postService.findOne(id);
-  // }
+  @Get('my-posts')
+  @UseGuards(JwtGuard)
+  findUserPosts(@Request() req: any, @Query() paginationDTO: PaginationDTO) {
+    return this.postService.findUserPosts(req.user.id, paginationDTO);
+  }  
 
   @Patch(':id')
   @UseGuards(JwtGuard)
