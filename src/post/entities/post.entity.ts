@@ -18,7 +18,7 @@ export class Post {
   id: number;
 
   @Column()
-  caption: string;
+  title: string;
 
   @Column({ default: '' })
   image: string;
@@ -27,7 +27,7 @@ export class Post {
   thumbnail: Thumbnail;
 
   @ManyToOne(() => User, (user) => user.posts)
-  @JoinColumn({ name: 'authorId' })
+  @JoinColumn()
   user: User;
 
   @ManyToMany(() => Tag, (tag) => tag.posts, { cascade: true })

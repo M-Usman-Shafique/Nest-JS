@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Post } from './entities/post.entity';
 import { PaginationDTO } from './dto/pagination.dto';
+import { createPostgresDatabase } from 'typeorm-extension';
 
 @Injectable()
 export class PostService {
@@ -12,17 +13,24 @@ export class PostService {
     @InjectRepository(Post)
     private postRepo: Repository<Post>,
   ) {}
-  async create(postBody: CreatePostDto) {
-    return await this.postRepo.save(postBody);
+  async create(postBody: CreatePostDto, user: any) {
+    const newPost = this.postRepo.create({
+      ...postBody,
+      user,
+    });
+
+    return await this.postRepo.save(newPost);
   }
 
   async findAll(paginationDTO: PaginationDTO) {
+    const { skip = 0, limit = 10 } = paginationDTO;
+
     const posts = await this.postRepo.find({
-      skip: paginationDTO.skip,
-      take: paginationDTO.limit ?? 10,
+      skip,
+      take: limit,
+      relations: ['user'],
     });
 
-    if (posts.length === 0) throw new NotFoundException();
     return posts;
   }
 
@@ -38,6 +46,13 @@ export class PostService {
   }
 
   async delete(id: number) {
-    return await this.postRepo.delete({ id });
+    const post = await this.postRepo.findOne({ where: { id } });
+
+    if (!post) {
+      throw new NotFoundException(`Post with ID ${id} not found.`);
+    }
+
+    await this.postRepo.remove(post);
+    return { message: 'Post deleted successfully.' };
   }
 }

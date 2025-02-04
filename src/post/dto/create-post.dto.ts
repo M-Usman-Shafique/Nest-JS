@@ -1,8 +1,9 @@
 import { IsOptional, IsString } from 'class-validator';
 
 export class CreatePostDto {
+
   @IsString()
-  caption: string;
+  title: string;
 
   @IsOptional()
   @IsString()

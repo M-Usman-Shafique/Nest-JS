@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PostModule } from './post/post.module';
 import { ConfigModule } from '@nestjs/config';
 import pgConfig from './config/pgConfig';
+import { SharedModule } from './shared/shared.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import pgConfig from './config/pgConfig';
       expandVariables: true,
       load: [pgConfig],
     }),
+    SharedModule,
     UserModule,
     TypeOrmModule.forRootAsync({
       useFactory: () => pgConfig(),
