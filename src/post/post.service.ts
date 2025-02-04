@@ -1,11 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Post } from './entities/post.entity';
 import { PaginationDTO } from './dto/pagination.dto';
-import { createPostgresDatabase } from 'typeorm-extension';
 
 @Injectable()
 export class PostService {
@@ -41,8 +44,23 @@ export class PostService {
     return post;
   }
 
-  async update(id: number, updatePostDto: UpdatePostDto) {
-    return await this.postRepo.update({ id }, updatePostDto);
+  async update(id: number, updatePostDto: UpdatePostDto, userId: number) {
+    const post = await this.postRepo.findOne({
+      where: { id },
+      relations: ['user'],
+    });
+
+    if (!post) {
+      throw new NotFoundException(`Post with ID ${id} not found`);
+    }
+
+    if (post.user.id !== userId) {
+      throw new UnauthorizedException('You are not allowed to edit this post');
+    }
+
+    Object.assign(post, updatePostDto);
+
+    return await this.postRepo.save(post);
   }
 
   async delete(id: number) {

@@ -39,11 +39,13 @@ export class PostController {
   // }
 
   @Patch(':id')
+  @UseGuards(JwtGuard)
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateBodyDto: UpdatePostDto,
+    @Request() req: any,
   ) {
-    return this.postService.update(id, updateBodyDto);
+    return this.postService.update(id, updateBodyDto, req.user.id);
   }
 
   @Delete(':id')
