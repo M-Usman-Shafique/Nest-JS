@@ -26,7 +26,7 @@ export class Post {
   @OneToOne(() => Thumbnail, (thumbnail) => thumbnail.post, { cascade: true })
   thumbnail: Thumbnail;
 
-  @ManyToOne(() => User, (user) => user.posts)
+  @ManyToOne(() => User, (user) => user.posts, { onDelete: 'CASCADE' })
   @JoinColumn()
   user: User;
 
