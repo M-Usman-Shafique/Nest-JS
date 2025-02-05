@@ -29,7 +29,7 @@ export class UserService {
 
   private generateToken(user: User): string {
     return this.jwtService.sign(
-      { id: user.id, email: user.email },
+      { id: user.id, username: user.username, email: user.email },
       {
         expiresIn: '1d',
       },
